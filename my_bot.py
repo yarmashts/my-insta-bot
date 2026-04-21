@@ -20,6 +20,6 @@ def webhook():
     return "EVENT_RECEIVED", 200
 
 if __name__ == '__main__':
-    # שורות קריטיות עבור Render
-    port = int(os.environ.get('PORT', 5000))
+    # השורות האלו פותרות את שגיאת ה-Port Scan ב-Render
+    port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
