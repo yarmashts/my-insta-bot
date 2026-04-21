@@ -16,9 +16,10 @@ def verify():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    # כאן יבוא הקוד של שליחת ההודעות בהמשך
+    # כאן יבוא הקוד של שליחת ההודעות
     return "EVENT_RECEIVED", 200
 
 if __name__ == '__main__':
+    # שורות קריטיות עבור Render
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
