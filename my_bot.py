@@ -16,10 +16,10 @@ def verify():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    # כאן יבוא הקוד של שליחת ההודעות
+    # אישור קבלת אירוע ממטא
     return "EVENT_RECEIVED", 200
 
 if __name__ == '__main__':
-    # השורות האלו פותרות את שגיאת ה-Port Scan ב-Render
+    # הגדרת פורט 10000 עבור Render
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
