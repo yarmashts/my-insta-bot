@@ -10,13 +10,14 @@ VERIFY_TOKEN = 'YaronBot2026'
 
 @app.route('/webhook', methods=['GET'])
 def verify():
-    mode = request.args.get('hub.mode')
-    token = request.args.get('hub.verify_token')
-    challenge = request.args.get('hub.challenge')
-    if mode == 'subscribe' and token == VERIFY_TOKEN:
-        print("WEBHOOK_VERIFIED")
+    # בדיקת אימות של מטא
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    if mode == "subscribe" and token == "my_secure_token_123":
         return challenge, 200
-    return 'Verification failed', 403
+    return "Verification failed", 403
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
