@@ -4,11 +4,14 @@ import requests
 
 app = Flask(__name__)
 
+# הטוקן הסודי שלך
 PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAGE5R3IxbGZAMMkwtQk5TZAzNIdnFfUy1Mel9ubnlndUtfRURLa3lsRnBtVDMtNFQxOHpVNkpGX1JRR2UxSFBrcTJudUxvLXlKV1VxYmdWcEJwdHppaEJzU1ZA4dHlSWC1DY3lZAQURwRkxPaU1BV2Q3OV9GdVluZAwZDZD"
 
 def get_amazon_link(keyword):
     try:
+        # בדיקה אם הקובץ קיים
         if not os.path.exists('links.csv'):
+            print("File links.csv not found")
             return None
         with open('links.csv', 'r', encoding='utf-8') as f:
             for line in f:
@@ -36,14 +39,19 @@ def webhook():
                     if "message" in event:
                         sender_id = event["sender"]["id"]
                         user_text = event["message"].get("text", "")
+                        # חיפוש לינק לפי מילת מפתח מההודעה
                         link = get_amazon_link(user_text)
                         if link:
                             send_message(sender_id, f"היי! מצאתי את מה שחיפשת: {link}")
+                        else:
+                            # הודעה לגיבוי אם לא נמצא לינק
+                            send_message(sender_id, "היי! תודה על ההודעה. כתוב 'deals' כדי לקבל את המבצעים החמים.")
     return "OK", 200
 
 def send_message(recipient_id, text):
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-    requests.post(url, json={"recipient": {"id": recipient_id}, "message": {"text": text}})
+    payload = {"recipient": {"id": recipient_id}, "message": {"text": text}}
+    requests.post(url, json=payload)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
