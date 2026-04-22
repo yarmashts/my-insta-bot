@@ -1,17 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import os
 import requests
 
 app = Flask(__name__)
 
-# הטוקן הסודי שלך
 PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAGE5R3IxbGZAMMkwtQk5TZAzNIdnFfUy1Mel9ubnlndUtfRURLa3lsRnBtVDMtNFQxOHpVNkpGX1JRR2UxSFBrcTJudUxvLXlKV1VxYmdWcEJwdHppaEJzU1ZA4dHlSWC1DY3lZAQURwRkxPaU1BV2Q3OV9GdVluZAwZDZD"
 
 def get_amazon_link(keyword):
     try:
-        # בדיקה אם הקובץ קיים
         if not os.path.exists('links.csv'):
-            print("File links.csv not found")
             return None
         with open('links.csv', 'r', encoding='utf-8') as f:
             for line in f:
@@ -20,38 +17,41 @@ def get_amazon_link(keyword):
                     if key.lower().strip() in keyword.lower():
                         return link.strip()
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"CSV Error: {e}")
     return None
 
 @app.route('/webhook', methods=['GET'])
 def verify():
+    # אימות ה-Webhook מול מטא
     if request.args.get("hub.verify_token") == "my_secure_token_123":
         return request.args.get("hub.challenge")
-    return "Failed", 403
+    return "Verification failed", 403
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
+    print(f"Incoming data: {data}") # זה ידפיס לנו ב-Logs בדיוק מה מגיע
+    
     if data.get("object") == "instagram":
         for entry in data.get("entry", []):
-            if "messaging" in entry:
-                for event in entry["messaging"]:
-                    if "message" in event:
-                        sender_id = event["sender"]["id"]
-                        user_text = event["message"].get("text", "")
-                        # חיפוש לינק לפי מילת מפתח מההודעה
-                        link = get_amazon_link(user_text)
-                        if link:
-                            send_message(sender_id, f"היי! מצאתי את מה שחיפשת: {link}")
-                        else:
-                            # הודעה לגיבוי אם לא נמצא לינק
-                            send_message(sender_id, "היי! תודה על ההודעה. כתוב 'deals' כדי לקבל את המבצעים החמים.")
-    return "OK", 200
+            for messaging_event in entry.get("messaging", []):
+                if "message" in messaging_event:
+                    sender_id = messaging_event["sender"]["id"]
+                    user_text = messaging_event["message"].get("text", "").lower()
+                    
+                    link = get_amazon_link(user_text)
+                    if link:
+                        send_message(sender_id, f"הנה הלינק שביקשת: {link}")
+                    else:
+                        send_message(sender_id, "היי! תודה על ההודעה. כתוב 'deals' למבצעים.")
+                        
+    return "EVENT_RECEIVED", 200
 
 def send_message(recipient_id, text):
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
     payload = {"recipient": {"id": recipient_id}, "message": {"text": text}}
-    requests.post(url, json=payload)
+    response = requests.post(url, json=payload)
+    print(f"Send response: {response.status_code} - {response.text}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
