@@ -4,17 +4,27 @@ import requests
 
 app = Flask(__name__)
 
-# הטוקן הסודי שלך
 PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAGE5R3IxbGZAMMkwtQk5TZAzNIdnFfUy1Mel9ubnlndUtfRURLa3lsRnBtVDMtNFQxOHpVNkpGX1JRR2UxSFBrcTJudUxvLXlKV1VxYmdWcEJwdHppaEJzU1ZA4dHlSWC1DY3lZAQURwRkxPaU1BV2Q3OV9GdVluZAwZDZD"
+
+def get_amazon_link(keyword):
+    try:
+        if not os.path.exists('links.csv'):
+            return None
+        with open('links.csv', 'r', encoding='utf-8') as f:
+            for line in f:
+                if ',' in line:
+                    key, link = line.strip().split(',', 1)
+                    if key.lower().strip() in keyword.lower():
+                        return link.strip()
+    except Exception as e:
+        print(f"Error: {e}")
+    return None
 
 @app.route('/webhook', methods=['GET'])
 def verify():
-    mode = request.args.get("hub.mode")
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-    if mode == "subscribe" and token == "my_secure_token_123":
-        return challenge, 200
-    return "Verification failed", 403
+    if request.args.get("hub.verify_token") == "my_secure_token_123":
+        return request.args.get("hub.challenge")
+    return "Failed", 403
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -25,15 +35,15 @@ def webhook():
                 for event in entry["messaging"]:
                     if "message" in event:
                         sender_id = event["sender"]["id"]
-                        # בדיקה פשוטה: הבוט יענה לכל הודעה כדי לאשר שהוא חי
-                        send_message(sender_id, "הקוד עובד! הסוכן שלך בענן מוכן!")
-    return "EVENT_RECEIVED", 200
+                        user_text = event["message"].get("text", "")
+                        link = get_amazon_link(user_text)
+                        if link:
+                            send_message(sender_id, f"היי! מצאתי את מה שחיפשת: {link}")
+    return "OK", 200
 
 def send_message(recipient_id, text):
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-    payload = {"recipient": {"id": recipient_id}, "message": {"text": text}}
-    response = requests.post(url, json=payload)
-    print(f"Response: {response.status_code}")
+    requests.post(url, json={"recipient": {"id": recipient_id}, "message": {"text": text}})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
