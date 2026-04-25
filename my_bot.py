@@ -3,13 +3,14 @@ import os, requests, sys
 
 app = Flask(__name__)
 
-# הטוקן החדש ששלחת - הוטמע
+# הטוקן ל-60 יום שהפקת ב-Debugger - הוטמע כאן
 PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAFp6WXpjS0xlMkJ4S3otR0FWTUpsSUpjZAVl3VnZAmMlBLUU9fT2IwMEg1dl90TjJGM2xpejFGS1pDWGVMZADNrWGhpT0FUVlhGYVZAZAWGtOQkZALMjVOOVB3TEdBTlFqbVZAEYlJKYWJFNDdFb3FXOVluMS1GaFpqYwZDZD"
 
 def get_amazon_link(keyword):
     try:
+        # בדיקה אם קובץ הלינקים קיים בתיקייה הראשית
         if not os.path.exists('links.csv'): 
-            print("CSV Error: links.csv not found")
+            print("CSV Error: links.csv file not found in root directory")
             return None
         with open('links.csv', 'r', encoding='utf-8') as f:
             for line in f:
@@ -24,14 +25,14 @@ def get_amazon_link(keyword):
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
+        # אימות ראשוני מול מטא
         if request.args.get("hub.verify_token") == "my_secure_token_123":
             return request.args.get("hub.challenge")
         return "Fail", 403
 
     if request.method == 'POST':
         data = request.get_json()
-        # הדפסה ללוגים של רנדר כדי לראות מה קורה בזמן אמת
-        print(f"--- Incoming Webhook Data ---")
+        print(f"--- Incoming Data ---")
         sys.stdout.flush()
         
         try:
@@ -39,16 +40,18 @@ def webhook():
                 for entry in data.get("entry", []):
                     for messaging_event in entry.get("messaging", []):
                         sender_id = messaging_event["sender"]["id"]
+                        
+                        # טיפול בהודעת טקסט נכנסת
                         if "message" in messaging_event:
                             user_text = messaging_event["message"].get("text", "").lower()
-                            print(f"User sent: {user_text}")
+                            print(f"User {sender_id} sent: {user_text}")
                             
                             link = get_amazon_link(user_text)
                             
                             if link:
                                 response_text = f"הנה הלינק שחיפשת: {link}"
                             else:
-                                response_text = "היי! תכתוב את שם המוצר או 'deals' כדי לקבל לינקים למבצעים שלנו."
+                                response_text = "היי! תכתוב 'deals' או את שם המוצר כדי לקבל לינקים למבצעים הכי חמים שלנו."
                             
                             send_message(sender_id, response_text)
         except Exception as e:
@@ -64,10 +67,11 @@ def send_message(recipient_id, text):
         "message": {"text": text}
     }
     response = requests.post(url, json=payload)
-    # כאן נראה ב-Logs אם השליחה הצליחה (200) או נכשלה (400/403)
-    print(f"Send status: {response.status_code}, Response: {response.text}")
+    # הדפסה קריטית ללוגים כדי לוודא הצלחה (200)
+    print(f"Send status: {response.status_code}, Response Body: {response.text}")
     sys.stdout.flush()
 
 if __name__ == '__main__':
-    # רנדר משתמש בפורט 10000 כברירת מחדל
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+    # התאמה לפורט של Render
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
