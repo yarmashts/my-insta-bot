@@ -3,7 +3,8 @@ import os, requests, sys
 
 app = Flask(__name__)
 
-PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAFpiLWFqc3FvcXU1eFVMTDlxMDAyemd3aEJybHBVNURDeGU3OE1KcDBRUG9RbjBqT3MxdS1yV3o1cDFuTkQ5OWkyZAjFBY3FnTXl3WjdEdjc3ZAVJsZAThwY0x3c01oSV9ZAZA1o0RmpVT0duRUhjZATU2LUJldkJFQQZDZD"
+# הטוקן המעודכן שלך - הוטמע בהצלחה
+PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAFl1NHZAaYUlReWxQTHNCN3Mxb3ZAwemRndloyWDVmX0lTdklDVm1UWGJ0VEx4Ul9PQjBCYXV1WGk5QTNGQXJVTlpGbFFJbkpITEVXd196RGdFc0duN1lmRjRNX0dnVDg0WEcxc0JmZAThRczNJbWVHNUlxaHRXYwZDZD"
 
 def get_amazon_link(keyword):
     try:
@@ -27,25 +28,33 @@ def webhook():
 
     if request.method == 'POST':
         data = request.get_json()
-        print("--- GOT DATA FROM META ---")
-        print(data)
-        sys.stdout.flush() # מכריח את Render להראות את הלוג עכשיו!
+        print(f"--- Incoming Data: {data}")
+        sys.stdout.flush()
         
-        if data.get("object") == "instagram":
-            for entry in data.get("entry", []):
-                for event in entry.get("messaging", []):
-                    if "message" in event:
-                        sid = event["sender"]["id"]
-                        txt = event["message"].get("text", "").lower()
-                        link = get_amazon_link(txt)
-                        msg = f"הנה הלינק: {link}" if link else "כתוב 'deals' למבצעים."
-                        send_message(sid, msg)
+        try:
+            if data.get("object") == "instagram":
+                for entry in data.get("entry", []):
+                    for messaging_event in entry.get("messaging", []):
+                        sender_id = messaging_event["sender"]["id"]
+                        if "message" in messaging_event:
+                            user_text = messaging_event["message"].get("text", "").lower()
+                            link = get_amazon_link(user_text)
+                            
+                            if link:
+                                send_message(sender_id, f"הנה הלינק שחיפשת: {link}")
+                            else:
+                                send_message(sender_id, "היי! תכתוב 'deals' כדי לראות את המבצעים הכי חמים שלנו.")
+        except Exception as e:
+            print(f"Error processing message: {e}")
+            sys.stdout.flush()
+            
         return "OK", 200
 
-def send_message(rid, txt):
+def send_message(recipient_id, text):
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-    res = requests.post(url, json={"recipient": {"id": rid}, "message": {"text": txt}})
-    print(f"Send status: {res.status_code}")
+    payload = {"recipient": {"id": recipient_id}, "message": {"text": text}}
+    response = requests.post(url, json=payload)
+    print(f"Send status: {response.status_code}, Response: {response.text}")
     sys.stdout.flush()
 
 if __name__ == '__main__':
