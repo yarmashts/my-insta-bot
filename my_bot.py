@@ -4,7 +4,7 @@ import os, requests, sys
 app = Flask(__name__)
 
 # הטוקן המעודכן (IG...) - מנוקה מרווחים מיותרים
-PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAFlWb3VvMFF6WUhHX2dFTzB4UXFqMUNaaGhoLVdGYUFRZAEgwMFBBZAFpvOUl2LTJTUmxfRFQtVVhFUGtCYjY0bjItNTNJLWZAhcGxSdDQ1NE52ZA0VXU0dSNEstempxbjAyR3V4TnREY3ZACc1o1SFo0ZAmRYTDhOZAwZDZD".strip()
+PAGE_ACCESS_TOKEN = "IGAASOBszRVu9BZAFlKTmZAhY0RHWFdtOHVlUUE3QXF0TU1RdkpIbHJfODlkWThfS1BQeHF4MnZAkN3Mtdkx6WWs2Mjhtdzl5ZAXNXb3otNmxyemJSeTF5aWNOUFFTc0tqNTlwbFJVT3ZA2ZAEczNkRTWWFxemVXOHlDQ0NoandiTFRmdwZDZD".strip()
 
 def get_amazon_link(keyword):
     """פונקציה לסריקת ה-CSV ומציאת לינק לפי מילת מפתח"""
