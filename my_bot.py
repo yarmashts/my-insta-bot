@@ -68,4 +68,6 @@ def webhook():
     return "ok", 200
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    # Render מעבירה את הפורט דרך משתנה סביבה, אם הוא לא קיים נשתמש ב-10000 כברירת מחדל
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
