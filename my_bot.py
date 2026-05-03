@@ -4,7 +4,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 # הטוקן שלך (השתמש בזה שסידרנו קודם ב-Debugger)
-PAGE_ACCESS_TOKEN = "EAAYUPZBaU65sBOZC6h6qI5T7yR3Fv2lqXm880ZCAsZAn3X7RCDW683Bv3GZBsG8qZAyq77NfLnd8q8E4pE8U6hN9HshwZBM7rW8nI6fG3VZAy7mX2WnZCZA2ZC4ZA5ZCZAyZA6o7mX7mZA8fG3VZAy7mX2WnZCZA2ZC4ZA5ZCZAyZA6"
+PAGE_ACCESS_TOKEN = "EAANVeKYnEKQBRdEY5cKq03WOiOwrzS7QlZBBuOhblmiJHo70OT9gmLIOS3AXibZBMLz6GEzBIIGevoXFGUi3Yzj4CfOYxBkRijWuLvv7nHVXj3LctfOlkghR9ZAMl5CySUcFeRtj91X2IsjthpXJ52Y9RGdo0eQ46foCkw33ZAHLP1tHvB5Kqa6lbY2PoERhSZAasqsVUrNVaZBs7OQiFCWQZDZD"
 
 def send_link(user_id):
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
